@@ -62,11 +62,7 @@ func (s *UserService) Register(req dto.RegisterRequest) (*model.User, error) {
 		Password: *req.Password,
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return user, err
 }
 
 func (s *UserService) Login(req dto.LoginRequest) (*jwt.TokenResponse, error) {
@@ -97,7 +93,7 @@ func (s *UserService) Login(req dto.LoginRequest) (*jwt.TokenResponse, error) {
 	user.LastLogin = &now
 
 	// TODO: Generate tokens
-	tokens, err := jwt.GenerateTokens(user.ID, user.Username, user.Role)
+	tokens, err := jwt.GenerateTokens(user.ID, user.Username, string(user.Role))
 	if err != nil {
 		return nil, errors.New("Failed to generate tokens")
 	}
@@ -113,6 +109,11 @@ func (s *UserService) Logout(authHeader string) {
 	jwt.BlacklistedTokens[tokenString] = true
 	// TODO: Remove refresh token from store
 	delete(jwt.RefreshTokens, tokenString)
+}
+
+func (s *UserService) FindAllUser() ([]model.User, error) {
+	return s.userRepo.FindAll()
+
 }
 
 func (s *UserService) FindUserByID(id int) *model.User {
@@ -161,7 +162,7 @@ func (s *UserService) RefreshToken(req dto.RefreshTokensRequest) (*jwt.TokenResp
 		return nil, errors.New("user not found ")
 	}
 	// TODO: Generate new access token
-	tokens, err := jwt.GenerateTokens(user.ID, user.Username, user.Role)
+	tokens, err := jwt.GenerateTokens(user.ID, user.Username, string(user.Role))
 	// TODO: Optionally rotate refresh token
 
 	if err != nil {
@@ -169,6 +170,23 @@ func (s *UserService) RefreshToken(req dto.RefreshTokensRequest) (*jwt.TokenResp
 	}
 
 	return tokens, nil
+}
+
+func (s *UserService) UpdateUserRole(req dto.UpdateUserRoleRequest) error {
+	user := s.userRepo.FindUserByID(req.ID)
+
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	if !req.Role.IsUserRole() {
+		return errors.New("change user type err")
+	}
+
+	user.Role = model.UserRole(req.Role)
+
+	return nil
+
 }
 
 // TODO: Implement account lockout check

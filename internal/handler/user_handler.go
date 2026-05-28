@@ -3,6 +3,7 @@ package handler
 import (
 	"goboke/internal/dto"
 	"goboke/internal/service"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -178,4 +179,65 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 		Message: "Token refreshed successfully",
 		Data:    tokens,
 	})
+}
+
+func (h *UserHandler) GetUsers(c *gin.Context) {
+	users, err := h.userService.FindAllUser()
+
+	if err != nil {
+		c.JSON(404, dto.APIResponse{
+			Success: false,
+			Error:   err.Error(),
+			Message: "not found all user list",
+		})
+		return
+	}
+
+	c.JSON(200, dto.APIResponse{
+		Success: true,
+		Data:    users,
+	})
+
+}
+
+func (h *UserHandler) UpdateUserRole(c *gin.Context) {
+	id := c.Param("id")
+
+	userID, err := strconv.Atoi(id)
+
+	if err != nil {
+		c.JSON(400, dto.APIResponse{
+			Success: false,
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	var req dto.UpdateUserRoleRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, dto.APIResponse{
+			Success: false,
+			Message: "json parse fail",
+		})
+		return
+	}
+
+	req.ID = userID
+	err = h.userService.UpdateUserRole(req)
+
+	if err != nil {
+		c.JSON(500, dto.APIResponse{
+			Success: false,
+			Error:   err.Error(),
+			Message: "update fail",
+		})
+		return
+	}
+
+	c.JSON(200, dto.APIResponse{
+		Success: true,
+		Message: "set user role success",
+	})
+
 }

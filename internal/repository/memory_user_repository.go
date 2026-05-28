@@ -17,15 +17,20 @@ func NewMemoryUserRepository() *MemoryUserRepository {
 	pd := "12345678"
 	hash, _ := password.HashPassword(pd)
 	var users = []model.User{
-		{ID: 1, Username: "lzw", Phone: "12345678", Password: "12345678", PasswordHash: hash, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: 1, Username: "lzw", Phone: "12345678", Password: pd, Role: model.RoleUser, PasswordHash: hash, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: 2, Username: "qimao", Phone: "88888888", Password: pd, Role: model.RoleAdmin, PasswordHash: hash, CreatedAt: time.Now(), UpdatedAt: time.Now()},
 	}
 
-	var nextID = 2
+	var nextID = 3
 
 	return &MemoryUserRepository{
 		users:  users,
 		nextID: nextID,
 	}
+}
+
+func (r *MemoryUserRepository) FindAll() ([]model.User, error) {
+	return r.users, nil
 }
 
 func (r *MemoryUserRepository) FindUserByUsername(username string) *model.User {

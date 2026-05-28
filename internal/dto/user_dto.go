@@ -1,5 +1,7 @@
 package dto
 
+import "goboke/internal/model"
+
 // RegisterRequest represents registration data
 type RegisterRequest struct {
 	Username        *string `json:"username" binding:"required,min=3,max=30"`
@@ -21,6 +23,11 @@ type UpdateUserprofileRequest struct {
 	Username *string `json:"username"`
 	Phone    *string `json:"phone"`
 	Avatar   *string `json:"avatar"`
+}
+
+type UpdateUserRoleRequest struct {
+	ID   int            `json:"-"`
+	Role model.UserRole `json:"role" binding:"required"`
 }
 
 type RefreshTokensRequest struct {

@@ -3,6 +3,7 @@ package router
 import (
 	"goboke/internal/handler"
 	"goboke/internal/middleware"
+	"goboke/internal/model"
 	"goboke/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -43,29 +44,35 @@ func SetupRouter(deps Deps) *gin.Engine {
 
 	userHandler := handler.NewUserHandler(deps.UserService)
 
-	auth := router.Group("/auth")
+	api := router.Group("/api")
 	{
-		auth.POST("/register", userHandler.Register)
-		auth.POST("/login", userHandler.Login)
-		auth.POST("/logout", userHandler.Logout)
-		auth.POST("/refresh", userHandler.RefreshToken)
+		api.POST("/register", userHandler.Register)
+		api.POST("/login", userHandler.Login)
+		api.GET("/ping", handler.Ping)
+		api.GET("/articles", articleHandler.GetArticles)
+		api.GET("/articles/:id", articleHandler.GetArticle)
+		api.PUT("/articles/:id", articleHandler.UpdateArticle)
+		api.POST("/refresh", userHandler.RefreshToken)
 	}
 
-	router.GET("/ping", handler.Ping)
-	router.GET("/articles", articleHandler.GetArticles)
-	router.GET("/articles/:id", articleHandler.GetArticle)
-	router.POST("/articles", articleHandler.CreateArticle)
-	router.PUT("/articles/:id", articleHandler.UpdateArticle)
-	router.DELETE("/articles/:id", articleHandler.DeleteArticle)
-
-	api := router.Group("/api")
-	api.Use(middleware.AuthMiddleware())
+	auth := api.Group("/auth")
+	auth.Use(middleware.AuthMiddleware())
 	{
-		api.GET("/articles", articleHandler.GetArticles)
-		api.POST("/articles", articleHandler.CreateArticle)
-		api.PUT("/articles/:id", articleHandler.UpdateArticle)
-		api.DELETE("/articles/:id", articleHandler.DeleteArticle)
-		api.GET("/admin/stats", articleHandler.GetStats)
+		auth.POST("/articles", articleHandler.CreateArticle)
+		auth.DELETE("/articles/:id", articleHandler.DeleteArticle)
+		auth.POST("/logout", userHandler.Logout)
+
+		auth.GET("/profile", userHandler.GetUserProfile)
+		auth.PUT("/profile", userHandler.UpdateUserProfile)
+	}
+
+	admin := api.Group("/admin")
+
+	admin.Use(middleware.AuthMiddleware(),
+		middleware.RequireRole(string(model.RoleAdmin)))
+	{
+		admin.GET("/users", userHandler.GetUsers)
+		admin.PUT("/users/:id/role", userHandler.UpdateUserRole)
 	}
 
 	return router
