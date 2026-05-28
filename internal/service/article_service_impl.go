@@ -50,6 +50,7 @@ func (s *ArticleService) CreateArticle(req dto.CreateArticleRequest) (*model.Art
 		Content:   *req.Content,
 		Author:    *req.Author,
 		UserID:    *req.UserID,
+		Tag:       req.Tag,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -74,6 +75,7 @@ func (s *ArticleService) UpdateArticle(id int, req dto.UpdateArticleRequest) (*m
 		Title:     req.Title,
 		Content:   req.Content,
 		Author:    req.Author,
+		Tag:       req.Tag,
 		UpdatedAt: time.Now(),
 	}
 
