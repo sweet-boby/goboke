@@ -27,24 +27,29 @@ func (s *ArticleService) GetArticle(id int) (*model.Article, error) {
 }
 
 func (s *ArticleService) CreateArticle(req dto.CreateArticleRequest) (*model.Article, error) {
-	if req.Title == "" {
+	if req.Title == nil {
 		return nil, errors.New("title is required")
 	}
 
-	if req.Content == "" {
+	if req.Content == nil {
 		return nil, errors.New("content is required")
 	}
 
-	if req.Author == "" {
+	if req.Author == nil {
 		return nil, errors.New("author is required")
+	}
+
+	if req.UserID == nil {
+		return nil, errors.New("UserID is required")
 	}
 
 	now := time.Now()
 
 	article := model.Article{
-		Title:     req.Title,
-		Content:   req.Content,
-		Author:    req.Author,
+		Title:     *req.Title,
+		Content:   *req.Content,
+		Author:    *req.Author,
+		UserID:    *req.UserID,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}

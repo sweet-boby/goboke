@@ -12,6 +12,7 @@ type Status string
 const (
 	StatusDraft     Status = "draft"
 	StatusPublished Status = "published"
+	StatusDeleted   Status = "deleted"
 )
 
 func (s Status) IsValid() bool {
@@ -30,6 +31,6 @@ type Article struct {
 	Comment   []Comment `json:"comment"`
 	Like      int       `json:"like"`
 	Hot       int       `json:"hot"`
-	UserID    int64     `json:"user_id"`
+	UserID    int       `json:"user_id"`
 	Author    string    `json:"author"`
 }

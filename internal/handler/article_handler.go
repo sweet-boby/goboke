@@ -114,6 +114,32 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 		})
 		return
 	}
+
+	userID, ok := c.Get("userID")
+
+	if !ok {
+		c.JSON(400, dto.APIResponse{
+			Success: true,
+			Message: "userID not fonund",
+		})
+		return
+	}
+
+	username, ok := c.Get("username")
+
+	if !ok {
+		c.JSON(400, dto.APIResponse{
+			Success: true,
+			Message: "userName not fonund",
+		})
+		return
+	}
+
+	userIDInt := userID.(int)
+	article.UserID = &userIDInt
+	userNameStr := username.(string)
+	article.Author = &userNameStr
+
 	art, err := h.articleService.CreateArticle(article)
 
 	if err != nil {

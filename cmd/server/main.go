@@ -12,8 +12,13 @@ import (
 func main() {
 	articleRepo := repository.NewMemoryArticleRepository()
 	articleService := service.NewArticleService(articleRepo)
+
+	userRepo := repository.NewMemoryUserRepository()
+	userService := service.NewUserService(userRepo)
+
 	router := router.SetupRouter(router.Deps{
 		ArticleService: articleService,
+		UserService:    userService,
 	})
 	// TODO: Start server on port 8080
 	router.Run()

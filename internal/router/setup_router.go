@@ -10,6 +10,7 @@ import (
 
 type Deps struct {
 	ArticleService *service.ArticleService
+	UserService    *service.UserService
 }
 
 func SetupRouter(deps Deps) *gin.Engine {
@@ -40,6 +41,16 @@ func SetupRouter(deps Deps) *gin.Engine {
 	// Public: GET /ping, GET /articles, GET /articles/:id
 	// Protected: POST /articles, PUT /articles/:id, DELETE /articles/:id, GET /admin/stats
 
+	userHandler := handler.NewUserHandler(deps.UserService)
+
+	auth := router.Group("/auth")
+	{
+		auth.POST("/register", userHandler.Register)
+		auth.POST("/login", userHandler.Login)
+		auth.POST("/logout", userHandler.Logout)
+		auth.POST("/refresh", userHandler.RefreshToken)
+	}
+
 	router.GET("/ping", handler.Ping)
 	router.GET("/articles", articleHandler.GetArticles)
 	router.GET("/articles/:id", articleHandler.GetArticle)
@@ -50,10 +61,12 @@ func SetupRouter(deps Deps) *gin.Engine {
 	api := router.Group("/api")
 	api.Use(middleware.AuthMiddleware())
 	{
+		api.GET("/articles", articleHandler.GetArticles)
 		api.POST("/articles", articleHandler.CreateArticle)
 		api.PUT("/articles/:id", articleHandler.UpdateArticle)
 		api.DELETE("/articles/:id", articleHandler.DeleteArticle)
 		api.GET("/admin/stats", articleHandler.GetStats)
 	}
+
 	return router
 }
