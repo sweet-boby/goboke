@@ -64,7 +64,7 @@ func (r *MemoryArticleRepository) Update(id int, article model.Article) (*model.
 func (r *MemoryArticleRepository) Delete(id int) error {
 	for index, art := range r.articles {
 		if art.ID == id {
-			r.articles = append(r.articles[:index], r.articles[index+1:]...)
+			r.articles[index].Status = model.StatusDeleted
 			return nil
 		}
 	}

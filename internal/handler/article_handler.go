@@ -2,6 +2,7 @@ package handler
 
 import (
 	"goboke/internal/dto"
+	"goboke/internal/model"
 	"goboke/internal/service"
 	"strconv"
 
@@ -159,22 +160,46 @@ func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 	id := c.Param("id")
 	artID, err := strconv.Atoi(id)
 	if err != nil {
-		c.JSON(404, gin.H{
-			"success": false,
+		c.JSON(404, dto.APIResponse{
+			Success: false,
+			Error:   err.Error(),
 		})
 		return
 	}
 
-	err = h.articleService.DeleteArticle(artID)
+	userID, ok := c.Get("userID")
+	if !ok {
+
+		c.JSON(404, dto.APIResponse{
+			Success: false,
+			Message: "not found userid",
+		})
+		return
+	}
+
+	role, ok := c.Get("role")
+
+	if !ok {
+		c.JSON(404, dto.APIResponse{
+			Success: false,
+			Message: "not found user role",
+		})
+		return
+	}
+
+	err = h.articleService.DeleteArticle(artID, userID.(int), model.UserRole(role.(string)))
 
 	if err != nil {
 		c.JSON(400, dto.APIResponse{
 			Success: false,
+			Error:   err.Error(),
 		})
+		return
 	}
 
 	c.JSON(200, dto.APIResponse{
 		Success: true,
+		Message: "delete success",
 	})
 
 }

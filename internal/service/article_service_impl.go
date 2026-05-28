@@ -80,8 +80,26 @@ func (s *ArticleService) UpdateArticle(id int, req dto.UpdateArticleRequest) (*m
 	return s.articleRepo.Update(id, article)
 }
 
-func (s *ArticleService) DeleteArticle(id int) error {
-	return s.articleRepo.Delete(id)
+func (s *ArticleService) DeleteArticle(id int, userID int, role model.UserRole) error {
+	art, err := s.articleRepo.FindByID(id)
+
+	if err != nil {
+		return err
+	}
+
+	if art.UserID == userID {
+		return s.articleRepo.Delete(id)
+	}
+
+	if role == model.RoleAdmin {
+		return s.articleRepo.Delete(id)
+	}
+
+	if art.Status == model.StatusDeleted {
+		return nil
+	}
+
+	return errors.New("delete fail")
 }
 
 func (s *ArticleService) GetStats() (map[string]interface{}, error) {
