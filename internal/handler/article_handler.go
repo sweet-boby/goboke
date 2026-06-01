@@ -29,6 +29,7 @@ func (h *ArticleHandler) GetStats(c *gin.Context) {
 		c.JSON(404, dto.APIResponse{
 			Success: false,
 		})
+		return
 	}
 
 	stats := map[string]interface{}{
