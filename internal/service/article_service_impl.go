@@ -104,6 +104,22 @@ func (s *ArticleService) DeleteArticle(id int, userID int, role model.UserRole) 
 	return errors.New("delete fail")
 }
 
+func (s *ArticleService) RecoverArticle(id int) error {
+	art, err := s.articleRepo.FindByID(id)
+
+	if err != nil {
+		return err
+	}
+
+	if art.Status == model.StatusDeleted {
+		art.Status = model.StatusDraft
+	} else {
+		return errors.New("article didn't be deleted")
+	}
+
+	return nil
+}
+
 func (s *ArticleService) GetStats() (map[string]interface{}, error) {
 	articles, err := s.articleRepo.FindAll()
 	if err != nil {

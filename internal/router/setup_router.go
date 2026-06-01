@@ -73,6 +73,7 @@ func SetupRouter(deps Deps) *gin.Engine {
 	{
 		admin.GET("/users", userHandler.GetUsers)
 		admin.PUT("/users/:id/role", userHandler.UpdateUserRole)
+		admin.PUT("/article/recover/:id", articleHandler.RecoverArticle)
 	}
 
 	return router
