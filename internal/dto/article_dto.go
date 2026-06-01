@@ -11,6 +11,11 @@ type CreateArticleRequest struct {
 	Tag     *[]string            `json:"tag"`
 }
 
+type CreateArticleHistoryRequest struct {
+	ArticleID *int `json:"article_id"`
+	UserID    *int `json:"-"`
+}
+
 type UpdateArticleRequest struct {
 	Title   *string              `json:"title" binding:"required"`
 	Content *string              `json:"content" binding:"required"`

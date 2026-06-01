@@ -61,7 +61,7 @@ func SetupRouter(deps Deps) *gin.Engine {
 		auth.DELETE("/articles/:id", articleHandler.DeleteArticle)
 		auth.PUT("/articles/:id", articleHandler.UpdateArticle)
 		auth.POST("/logout", userHandler.Logout)
-
+		auth.GET("/articleHistory", articleHandler.GetArticleHistoryByUserID)
 		auth.GET("/profile", userHandler.GetUserProfile)
 		auth.PUT("/profile", userHandler.UpdateUserProfile)
 	}

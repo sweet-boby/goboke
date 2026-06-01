@@ -11,7 +11,8 @@ import (
 
 func main() {
 	articleRepo := repository.NewMemoryArticleRepository()
-	articleService := service.NewArticleService(articleRepo)
+	articleHistoryRepo := repository.NewArticleHistoryRepository()
+	articleService := service.NewArticleService(articleRepo, articleHistoryRepo)
 
 	userRepo := repository.NewMemoryUserRepository()
 	userService := service.NewUserService(userRepo)

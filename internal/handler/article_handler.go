@@ -4,7 +4,9 @@ import (
 	"goboke/internal/dto"
 	"goboke/internal/model"
 	"goboke/internal/service"
+	"goboke/internal/util/jwt"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -103,17 +105,70 @@ func (h *ArticleHandler) GetArticle(c *gin.Context) {
 	id := c.Param("id")
 	artID, err := strconv.Atoi(id)
 	if err != nil {
-		c.JSON(400, gin.H{
-			"success": false,
+		c.JSON(400, dto.APIResponse{
+			Success: false,
+			Error:   err.Error(),
 		})
 		return
 	}
 
-	art, err := h.articleService.GetArticle(artID)
+	authHeader := c.GetHeader("Authorization")
+	userID := 0
+	if authHeader != "" {
+		// TODO: Extract token from "Bearer <token>" format
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+		// TODO: Validate token using validateToken function
+		claims, err := jwt.ValidateToken(tokenString)
+		if err == nil {
+			userID = claims.UserID
+		}
+	}
+
+	art, err := h.articleService.GetArticle(dto.CreateArticleHistoryRequest{
+		ArticleID: &artID,
+		UserID:    &userID,
+	})
 
 	c.JSON(200, dto.APIResponse{
 		Success: true,
 		Data:    art,
+	})
+
+}
+
+func (h *ArticleHandler) GetArticleHistoryByUserID(c *gin.Context) {
+	v, ok := c.Get("userID")
+	if !ok {
+		c.JSON(400, dto.APIResponse{
+			Success: false,
+			Message: "user id not found",
+		})
+		return
+	}
+
+	userID, ok := v.(int)
+	if !ok {
+		c.JSON(400, dto.APIResponse{
+			Success: false,
+			Message: "user id not found",
+		})
+		return
+	}
+
+	historise, err := h.articleService.GetArticleHistoryByUserID(userID)
+
+	if err != nil {
+		c.JSON(500, dto.APIResponse{
+			Success: false,
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, dto.APIResponse{
+		Success: true,
+		Data:    historise,
 	})
 
 }

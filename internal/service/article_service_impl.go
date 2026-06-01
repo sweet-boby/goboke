@@ -9,12 +9,14 @@ import (
 )
 
 type ArticleService struct {
-	articleRepo repository.ArticleRepository
+	articleRepo    repository.ArticleRepository
+	articleHistory repository.ArticleHistoryRepository
 }
 
-func NewArticleService(articleRepo repository.ArticleRepository) *ArticleService {
+func NewArticleService(articleRepo repository.ArticleRepository, articleHistory repository.ArticleHistoryRepository) *ArticleService {
 	return &ArticleService{
-		articleRepo: articleRepo,
+		articleRepo:    articleRepo,
+		articleHistory: articleHistory,
 	}
 }
 
@@ -40,8 +42,29 @@ func (s *ArticleService) GetArticlesWithAdmin() ([]model.Article, error) {
 	return s.articleRepo.FindAll()
 }
 
-func (s *ArticleService) GetArticle(id int) (*model.Article, error) {
-	return s.articleRepo.FindByID(id)
+func (s *ArticleService) GetArticle(req dto.CreateArticleHistoryRequest) (*model.Article, error) {
+	art, err := s.articleRepo.FindByID(*req.ArticleID)
+
+	userID := 0
+
+	if req.UserID != nil {
+
+		userID = *req.UserID
+
+	}
+
+	_, err = s.articleHistory.Create(model.ArticleHistory{
+
+		ArticleID: *req.ArticleID,
+
+		UserID: userID,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return art, nil
 }
 
 func (s *ArticleService) CreateArticle(req dto.CreateArticleRequest) (*model.Article, error) {
@@ -151,6 +174,10 @@ func (s *ArticleService) RecoverArticle(id int) error {
 	}
 
 	return nil
+}
+
+func (s *ArticleService) GetArticleHistoryByUserID(id int) ([]model.ArticleHistory, error) {
+	return s.articleHistory.FindByUserID(id)
 }
 
 func (s *ArticleService) GetStats() (map[string]interface{}, error) {

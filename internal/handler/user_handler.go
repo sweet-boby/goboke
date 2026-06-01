@@ -105,7 +105,9 @@ func (h *UserHandler) GetUserProfile(c *gin.Context) {
 	if !ok {
 		c.JSON(400, dto.APIResponse{
 			Success: false,
+			Message: "not user id ",
 		})
+		return
 	}
 	// TODO: Find user by ID
 	user := h.userService.FindUserByID(userID.(int))
