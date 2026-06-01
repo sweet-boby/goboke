@@ -95,7 +95,7 @@ func (s *UserService) Login(req dto.LoginRequest) (*jwt.TokenResponse, error) {
 	// TODO: Generate tokens
 	tokens, err := jwt.GenerateTokens(user.ID, user.Username, string(user.Role))
 	if err != nil {
-		return nil, errors.New("Failed to generate tokens")
+		return nil, err
 	}
 
 	return tokens, nil
