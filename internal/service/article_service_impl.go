@@ -19,6 +19,24 @@ func NewArticleService(articleRepo repository.ArticleRepository) *ArticleService
 }
 
 func (s *ArticleService) GetArticles() ([]model.Article, error) {
+	list := []model.Article{}
+	arts, err := s.articleRepo.FindAll()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range arts {
+		if v.Status != model.StatusDeleted {
+			list = append(list, v)
+		}
+	}
+
+	return list, nil
+
+}
+
+func (s *ArticleService) GetArticlesWithAdmin() ([]model.Article, error) {
 	return s.articleRepo.FindAll()
 }
 
@@ -43,6 +61,11 @@ func (s *ArticleService) CreateArticle(req dto.CreateArticleRequest) (*model.Art
 		return nil, errors.New("UserID is required")
 	}
 
+	if req.Status == nil {
+		s := model.StatusDraft
+		req.Status = &s
+	}
+
 	now := time.Now()
 
 	article := model.Article{
@@ -50,7 +73,8 @@ func (s *ArticleService) CreateArticle(req dto.CreateArticleRequest) (*model.Art
 		Content:   *req.Content,
 		Author:    *req.Author,
 		UserID:    *req.UserID,
-		Tag:       req.Tag,
+		Tag:       *req.Tag,
+		Status:    *req.Status,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -59,23 +83,32 @@ func (s *ArticleService) CreateArticle(req dto.CreateArticleRequest) (*model.Art
 }
 
 func (s *ArticleService) UpdateArticle(id int, req dto.UpdateArticleRequest) (*model.Article, error) {
-	if req.Title == "" {
+	if req.Title == nil {
 		return nil, errors.New("title is required")
 	}
 
-	if req.Content == "" {
+	if req.Content == nil {
 		return nil, errors.New("content is required")
 	}
 
-	if req.Author == "" {
+	if req.Author == nil {
 		return nil, errors.New("author is required")
 	}
 
+	if req.Tag == nil {
+		art, err := s.articleRepo.FindByID(id)
+		if err != nil {
+			return nil, err
+		}
+		req.Tag = &art.Tag
+	}
+
 	article := model.Article{
-		Title:     req.Title,
-		Content:   req.Content,
-		Author:    req.Author,
-		Tag:       req.Tag,
+		Title:     *req.Title,
+		Content:   *req.Content,
+		Author:    *req.Author,
+		Tag:       *req.Tag,
+		Status:    *req.Status,
 		UpdatedAt: time.Now(),
 	}
 
@@ -102,6 +135,22 @@ func (s *ArticleService) DeleteArticle(id int, userID int, role model.UserRole) 
 	}
 
 	return errors.New("delete fail")
+}
+
+func (s *ArticleService) RecoverArticle(id int) error {
+	art, err := s.articleRepo.FindByID(id)
+
+	if err != nil {
+		return err
+	}
+
+	if art.Status == model.StatusDeleted {
+		art.Status = model.StatusDraft
+	} else {
+		return errors.New("article didn't be deleted")
+	}
+
+	return nil
 }
 
 func (s *ArticleService) GetStats() (map[string]interface{}, error) {

@@ -80,6 +80,21 @@ func (h *ArticleHandler) GetArticles(c *gin.Context) {
 	})
 }
 
+func (h *ArticleHandler) GetArticlesWithAdmin(c *gin.Context) {
+	arts, err := h.articleService.GetArticlesWithAdmin()
+
+	if err != nil {
+		c.JSON(404, dto.APIResponse{
+			Success: false,
+		})
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"data":    arts,
+	})
+}
+
 // getArticle handles GET /articles/:id - get article by ID
 func (h *ArticleHandler) GetArticle(c *gin.Context) {
 	// TODO: Get article ID from URL parameter
@@ -201,6 +216,35 @@ func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 	c.JSON(200, dto.APIResponse{
 		Success: true,
 		Message: "delete success",
+	})
+
+}
+
+func (h *ArticleHandler) RecoverArticle(c *gin.Context) {
+	id := c.Param("id")
+	artID, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(404, dto.APIResponse{
+			Success: false,
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	err = h.articleService.RecoverArticle(artID)
+
+	if err != nil {
+		c.JSON(500, dto.APIResponse{
+			Success: false,
+			Error:   err.Error(),
+			Message: "recover fail",
+		})
+		return
+	}
+
+	c.JSON(200, dto.APIResponse{
+		Success: true,
+		Message: "recover success",
 	})
 
 }

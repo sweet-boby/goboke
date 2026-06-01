@@ -54,6 +54,8 @@ func (r *MemoryArticleRepository) Update(id int, article model.Article) (*model.
 			oldArt.Title = article.Title
 			oldArt.Content = article.Content
 			oldArt.Author = article.Author
+			oldArt.Tag = article.Tag
+			oldArt.Status = article.Status
 			oldArt.UpdatedAt = time.Now()
 			return oldArt, nil
 		}

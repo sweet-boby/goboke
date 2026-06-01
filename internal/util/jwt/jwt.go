@@ -67,16 +67,28 @@ func GenerateTokens(userID int, username, role string) (*TokenResponse, error) {
 		return nil, err
 	}
 	// TODO: Generate refresh token with 7 day expiry
-	refreshToken, err := GenerateRandomToken()
+	refreshClaims := &JWTClaims{
+		Username: username,
+		UserID:   userID,
+		Role:     role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(refreshTokenTTL)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Issuer:    "your-app",
+		},
+	}
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+	refreshTokenString, err := refreshToken.SignedString(jwtSecret)
 	if err != nil {
 		return nil, err
 	}
+
 	// TODO: Store refresh token in memory store
-	RefreshTokens[refreshToken] = userID
+	RefreshTokens[refreshTokenString] = userID
 
 	return &TokenResponse{
 		AccessToken:  accessTokenString,
-		RefreshToken: refreshToken,
+		RefreshToken: refreshTokenString,
 		TokenType:    "Bearer",
 		ExpiresIn:    int64(accessTokenTTL.Seconds()),
 		ExpiresAt:    time.Now().Add(accessTokenTTL),
